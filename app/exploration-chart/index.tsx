@@ -18,7 +18,9 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function ExplorationChart({ loaderData }: Route.ComponentProps) {
   const parseResult = Papa.parse<any>(loaderData.csvData);
-  const records = parseResult.data;
+  const records = parseResult.data.filter(
+    (record: any[]) => record.length > 1 || record[0] !== ""
+  );
 
   return (
     <div>

@@ -1,5 +1,7 @@
-import Papa from "papaparse";
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
+import SelectControl from "./select-control";
+import { groupData } from "./utils";
+import TableView from "./table-view";
 
 const HEADERS_INDEX = 0;
 
@@ -65,14 +67,23 @@ function chartControlReducer(state: ChartControlState, action: Action) {
 
 export default function DynamicChart({ records }: { records: any[] }) {
   const headers: string[] = records[HEADERS_INDEX];
+  const [showTable, setShowTable] = useState(false);
 
   const [chartControlState, chartControlDispatch] = useReducer(
     chartControlReducer,
     {
-      axisX: "",
-      axisY: "",
-      groupColumn: "",
+      axisX: headers[0],
+      axisY: headers[0],
+      groupColumn: headers[0],
     }
+  );
+
+  const groupedData = groupData(
+    records,
+    headers,
+    chartControlState.axisX,
+    chartControlState.axisY,
+    chartControlState.groupColumn
   );
 
   return (
@@ -83,74 +94,53 @@ export default function DynamicChart({ records }: { records: any[] }) {
         <h2>Dynamic chart control:</h2>
         <section>
           <h3>Input Selection</h3>
-          <div>
-            <label>
-              Pick Axis X
-              <select
-                onChange={(e) =>
-                  chartControlDispatch({
-                    type: CHART_CONTROL_ACTION_TYPE.SET_AXIS_X,
-                    payload: {
-                      axisX: e.currentTarget.value,
-                    },
-                  })
-                }
-              >
-                {headers.map((header, index) => (
-                  <option value={header} key={`${index}-${header}`}>
-                    {header}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label>
-              Pick Axis Y
-              <select
-                onChange={(e) =>
-                  chartControlDispatch({
-                    type: CHART_CONTROL_ACTION_TYPE.SET_AXIS_Y,
-                    payload: {
-                      axisY: e.currentTarget.value,
-                    },
-                  })
-                }
-              >
-                {headers.map((header, index) => (
-                  <option value={header} key={`${index}-${header}`}>
-                    {header}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label>
-              Grup Kolom
-              <select
-                onChange={(e) =>
-                  chartControlDispatch({
-                    type: CHART_CONTROL_ACTION_TYPE.SET_GROUP_COLUMN,
-                    payload: {
-                      groupColumn: e.currentTarget.value,
-                    },
-                  })
-                }
-              >
-                {headers.map((header, index) => (
-                  <option value={header} key={`${index}-${header}`}>
-                    {header}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          <SelectControl
+            label="Pick Axis X"
+            options={headers}
+            value={chartControlState.axisX}
+            onChange={(axisX) =>
+              chartControlDispatch({
+                type: CHART_CONTROL_ACTION_TYPE.SET_AXIS_X,
+                payload: { axisX },
+              })
+            }
+          />
+          <SelectControl
+            label="Pick Axis Y"
+            options={headers}
+            value={chartControlState.axisY}
+            onChange={(axisY) =>
+              chartControlDispatch({
+                type: CHART_CONTROL_ACTION_TYPE.SET_AXIS_Y,
+                payload: { axisY },
+              })
+            }
+          />
+          <SelectControl
+            label="Grup Kolom"
+            options={headers}
+            value={chartControlState.groupColumn}
+            onChange={(groupColumn) =>
+              chartControlDispatch({
+                type: CHART_CONTROL_ACTION_TYPE.SET_GROUP_COLUMN,
+                payload: { groupColumn },
+              })
+            }
+          />
         </section>
 
         <div>Axis X - {chartControlState.axisX}</div>
         <div>Axis Y - {chartControlState.axisY}</div>
         <div>Group Column - {chartControlState.groupColumn}</div>
+
+        <button
+          onClick={() => setShowTable(!showTable)}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-4"
+        >
+          {showTable ? "Hide" : "Show"} Table
+        </button>
+
+        {showTable && <TableView data={groupedData} />}
       </div>
     </>
   );
