@@ -1,7 +1,8 @@
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 import SelectControl from "./select-control";
-import { groupData } from "./utils";
+import { groupData, pivotData, transformDataForNivo } from "./utils";
 import TableView from "./table-view";
+import LineChart from "./line-chart";
 
 const HEADERS_INDEX = 0;
 
@@ -67,24 +68,29 @@ function chartControlReducer(state: ChartControlState, action: Action) {
 
 export default function DynamicChart({ records }: { records: any[] }) {
   const headers: string[] = records[HEADERS_INDEX];
-  const [showTable, setShowTable] = useState(false);
 
   const [chartControlState, chartControlDispatch] = useReducer(
     chartControlReducer,
     {
-      axisX: headers[0],
-      axisY: headers[0],
-      groupColumn: headers[0],
+      axisX: "tahun",
+      axisY: "jumlah_lab",
+      groupColumn: "kondisi_lab",
     }
   );
 
-  const groupedData = groupData(
+  let groupedData = groupData(
     records,
     headers,
     chartControlState.axisX,
     chartControlState.axisY,
     chartControlState.groupColumn
   );
+
+  if (chartControlState.axisX === "kondisi_lab") {
+    groupedData = pivotData(groupedData);
+  }
+
+  const nivoData = transformDataForNivo(groupedData);
 
   return (
     <>
@@ -133,14 +139,8 @@ export default function DynamicChart({ records }: { records: any[] }) {
         <div>Axis Y - {chartControlState.axisY}</div>
         <div>Group Column - {chartControlState.groupColumn}</div>
 
-        <button
-          onClick={() => setShowTable(!showTable)}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-4"
-        >
-          {showTable ? "Hide" : "Show"} Table
-        </button>
-
-        {showTable && <TableView data={groupedData} />}
+        <LineChart data={nivoData} />
+        <TableView data={groupedData} />
       </div>
     </>
   );
