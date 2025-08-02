@@ -25,7 +25,7 @@ export function groupData(
 
   for (let i = 1; i < records.length; i++) {
     const record = records[i];
-    if (!record || record.length === 1 && !record[0]) continue;
+    if (!record || (record.length === 1 && !record[0])) continue;
 
     const groupKey = record[groupColumnIndex] as string;
     const xValue = record[axisXIndex] as string;

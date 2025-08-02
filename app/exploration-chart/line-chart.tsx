@@ -4,6 +4,35 @@ type LineChartProps = {
   data: { id: string; data: { x: string; y: number }[] }[];
 };
 
+type CustomTooltipProps = {
+  point: {
+    serieId: string | number;
+    data: {
+      xFormatted: string;
+      yFormatted: string;
+    };
+  };
+};
+
+const CustomTooltip = ({ point }: CustomTooltipProps) => {
+  return (
+    <div
+      style={{
+        background: "white",
+        padding: "9px 12px",
+        border: "1px solid #ccc",
+      }}
+    >
+      <div>
+        <strong>Series: {point.serieId}</strong>
+      </div>
+      <div>
+        {point.data.xFormatted}: {point.data.yFormatted}
+      </div>
+    </div>
+  );
+};
+
 export default function LineChart({ data }: LineChartProps) {
   return (
     <div className="h-screen w-full">
@@ -15,10 +44,11 @@ export default function LineChart({ data }: LineChartProps) {
           type: "linear",
           min: "auto",
           max: "auto",
-          stacked: true,
+          stacked: false,
           reverse: false,
         }}
         yFormat=" >-.2f"
+        curve="monotoneX"
         axisTop={null}
         axisRight={null}
         axisBottom={{
@@ -43,6 +73,7 @@ export default function LineChart({ data }: LineChartProps) {
         pointBorderColor={{ from: "serieColor" }}
         pointLabelYOffset={-12}
         useMesh={true}
+        tooltip={CustomTooltip}
         legends={[
           {
             anchor: "bottom-right",
