@@ -76,7 +76,7 @@ export default function LineChart({ data }: LineChartProps) {
         tooltip={CustomTooltip}
         legends={[
           {
-            anchor: "bottom-right",
+            anchor: "bottom",
             direction: "column",
             justify: false,
             translateX: 100,
