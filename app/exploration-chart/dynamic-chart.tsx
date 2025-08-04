@@ -3,6 +3,7 @@ import SelectControl from "./select-control";
 import { groupData, pivotData, transformDataForNivo } from "./utils";
 import TableView from "./table-view";
 import LineChart from "./line-chart";
+import BarChart from "./bar-chart";
 
 const HEADERS_INDEX = 0;
 
@@ -66,6 +67,32 @@ function chartControlReducer(state: ChartControlState, action: Action) {
   }
 }
 
+function transformDataForBarChart(nivoData: any) {
+  const allKeys = new Set();
+  nivoData.forEach((item: any) => {
+    item.data.forEach((d: any) => {
+      allKeys.add(item.id);
+    });
+  });
+
+  const data = nivoData.reduce((acc: any, item: any) => {
+    item.data.forEach((d: any) => {
+      const existing = acc.find((a: any) => a.x === d.x);
+      if (existing) {
+        existing[item.id] = d.y;
+      } else {
+        acc.push({ x: d.x, [item.id]: d.y });
+      }
+    });
+    return acc;
+  }, []);
+
+  return {
+    data,
+    keys: Array.from(allKeys),
+  };
+}
+
 export default function DynamicChart({ records }: { records: any[] }) {
   const headers: string[] = records[HEADERS_INDEX];
 
@@ -91,6 +118,7 @@ export default function DynamicChart({ records }: { records: any[] }) {
   }
 
   const nivoData = transformDataForNivo(groupedData);
+  const barChartData = transformDataForBarChart(nivoData);
 
   return (
     <>
@@ -140,6 +168,13 @@ export default function DynamicChart({ records }: { records: any[] }) {
         <div>Group Column - {chartControlState.groupColumn}</div>
 
         <LineChart data={nivoData} />
+        <BarChart
+          data={barChartData.data}
+          keys={barChartData.keys}
+          indexBy="x"
+          axisBottomLegend={chartControlState.axisX}
+          axisLeftLegend={chartControlState.axisY}
+        />
         <TableView data={groupedData} />
       </div>
     </>
